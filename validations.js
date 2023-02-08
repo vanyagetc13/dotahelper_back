@@ -13,7 +13,7 @@ export const registerValidation = [
 ]
 
 export const playerCreateValidation = [
-    body('fullName').isLength().isString(),
+    body('fullName').isLength({min: 3, max: 16}).isString(),
     body('steamId',).isLength(17).isString(),
     body('mmr').optional().isNumeric().isLength({min: 1, max: 5}),
 ]

@@ -7,9 +7,11 @@ import {
     playerCreateValidation,
     registerValidation,
 } from "./validations.js";
+
 import checkAuth from "./utils/checkAuth.js";
 import { PlayerController, UserController } from "./controllers/index.js";
 import handleValidationErrors from "./utils/handleValidationErrors.js";
+import axios from "axios";
 
 // Connection & App Creation
 mongoose
@@ -24,7 +26,7 @@ mongoose
     });
 const app = express();
 app.use(express.json());
-app.use(cors())
+app.use(cors());
 
 // Default
 
@@ -34,11 +36,21 @@ app.get("/", (req, res) => {
 
 // Auth
 
-app.post("/auth/login", loginValidation, handleValidationErrors, UserController.login);
+app.post(
+    "/auth/login",
+    loginValidation,
+    handleValidationErrors,
+    UserController.login
+);
 
 app.get("/auth/me", checkAuth, UserController.findMe);
 
-app.post("/auth/register", registerValidation, handleValidationErrors, UserController.register);
+app.post(
+    "/auth/register",
+    registerValidation,
+    handleValidationErrors,
+    UserController.register
+);
 
 // Players
 
@@ -46,7 +58,36 @@ app.get("/players", checkAuth, PlayerController.getAll);
 
 app.get("/players/:id", checkAuth, PlayerController.getById);
 
-app.post("/players", checkAuth, playerCreateValidation, handleValidationErrors, PlayerController.create);
+app.post(
+    "/players",
+    checkAuth,
+    playerCreateValidation,
+    handleValidationErrors,
+    PlayerController.create
+);
+
+// Randomizer
+app.post("/random", async (req, res) => {
+    const amount = req.body.amount
+    const response = await axios.post(
+        "https://api.random.org/json-rpc/4/invoke",
+        {
+            jsonrpc: "2.0",
+            method: "generateIntegerSequences",
+            params: {
+                apiKey: "6c7d0a35-2df0-46c7-80b0-67ab86a29af3",
+                n: 1,
+                length: [amount],
+                min: [1],
+                max: [amount],
+                replacement: [false],
+                base: [10],
+            },
+            id: 467333
+        }
+    );
+    res.json(response.data);
+});
 
 // Listener
 
